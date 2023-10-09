@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import styled from "@emotion/styled";
-import { columnsFromBackend } from "./KanbanData";
 import { DragDropContext, Droppable } from "react-beautiful-dnd";
 import TaskCard from "./TaskCard";
+import { v4 as uuidv4 } from "uuid";
+import { doc, setDoc, getDoc } from "firebase/firestore";
+import { db } from "./firebase.config";
 
 const Container = styled.div`
   display: flex;
@@ -35,6 +37,148 @@ const Title = styled.span`
 `;
 
 const Kanban = () => {
+  const [completedItems, updateCompletedItems] = useState([]);
+  const [todoItems, updateTodoItems] = useState([]);
+  const [inProgressItems, updateInProgressItems] = useState([]);
+
+  const getData = async () => {
+    const docRef1 = doc(
+      db,
+      "data",
+      "users",
+      "11001",
+      "data",
+      "tasks",
+      "streaks",
+      "1",
+      "completed"
+    );
+    const docSnap1 = await getDoc(docRef1);
+
+    const docRef2 = doc(
+      db,
+      "data",
+      "users",
+      "11001",
+      "data",
+      "tasks",
+      "streaks",
+      "1",
+      "progress"
+    );
+    const docSnap2 = await getDoc(docRef2);
+
+    const docRef3 = doc(
+      db,
+      "data",
+      "users",
+      "11001",
+      "data",
+      "tasks",
+      "streaks",
+      "1",
+      "todo"
+    );
+    const docSnap3 = await getDoc(docRef3);
+
+    updateCompletedItems(docSnap1.data()?.items);
+    updateInProgressItems(docSnap2.data()?.items);
+    updateTodoItems(docSnap3.data()?.items);
+  };
+
+  React.useEffect(() => {
+    // setDoc(
+    //   doc(
+    //     db,
+    //     "data",
+    //     "users",
+    //     "11001",
+    //     "data",
+    //     "tasks",
+    //     "streaks",
+    //     "1",
+    //     "completed"
+    //   ),
+    //   {
+    //     items: [
+    //       {
+    //         id: "1",
+    //         Task: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent.",
+    //         image: "google.com",
+    //       },
+    //       {
+    //         id: "2",
+    //         Task: "Lore2 ipsum dolor sit amet, consectetur adipiscing elit. Praesent.",
+    //         image: "google.com",
+    //       },
+    //     ],
+    //   }
+    // );
+    getData();
+  }, []);
+
+  const columnsFromBackend = {
+    [uuidv4()]: {
+      title: "To-do",
+      items: [
+        {
+          id: "1",
+          Task: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent.",
+          // Assigned_To: 'Beltran',
+          // Assignee: 'Romona',
+          // Status: 'To-do',
+          // Priority: 'Low',
+          Due_Date: "25-May-2020",
+        },
+        {
+          id: "2",
+          Task: "Fix Styling",
+          // Assigned_To: 'Dave',
+          // Assignee: 'Romona',
+          // Status: 'To-do',
+          // Priority: 'Low',
+          Due_Date: "26-May-2020",
+        },
+        {
+          id: "3",
+          Task: "Handle Door Specs",
+          // Assigned_To: 'Roman',
+          // Assignee: 'Romona',
+          // Status: 'To-do',
+          // Priority: 'Low',
+          Due_Date: "27-May-2020",
+        },
+        {
+          id: "4",
+          Task: "morbi",
+          // Assigned_To: 'Gawen',
+          // Assignee: 'Kai',
+          // Status: 'Done',
+          // Priority: 'High',
+          Due_Date: "23-Aug-2020",
+        },
+        {
+          id: "5",
+          Task: "proin",
+          // Assigned_To: 'Bondon',
+          // Assignee: 'Antoinette',
+          // Status: 'In Progress',
+          // Priority: 'Medium',
+          Due_Date: "05-Jan-2021",
+        },
+      ],
+    },
+    [uuidv4()]: {
+      title: "In Progress",
+      items: inProgressItems,
+    },
+    [uuidv4()]: {
+      title: "Done",
+      items: completedItems,
+    },
+  };
+
+  console.log(columnsFromBackend);
   const [columns, setColumns] = useState(columnsFromBackend);
 
   const onDragEnd = (result, columns, setColumns) => {
